@@ -10,6 +10,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { CurrentUser, JwtPayload } from 'src/decorators/current-user.decorator';
+import { IdempotencyGuard } from 'src/guards/idempotency.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GameMode } from '../database/entities/leaderboard.entity';
 import { SubmitScoreDto } from './dto/submit-score.dto';
@@ -22,6 +23,7 @@ export class LeaderboardController {
 
   @Post('submit')
   @UsePipes(new ValidationPipe())
+  @UseGuards(IdempotencyGuard)
   async submitScore(
     @Body() submitScoreDto: SubmitScoreDto,
     @CurrentUser() user: JwtPayload,
