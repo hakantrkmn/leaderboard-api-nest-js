@@ -9,6 +9,15 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from 'src/decorators/current-user.decorator';
 import { IdempotencyGuard } from 'src/guards/idempotency.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -16,12 +25,34 @@ import { GameMode } from '../database/entities/leaderboard.entity';
 import { SubmitScoreDto } from './dto/submit-score.dto';
 import { LeaderboardService } from './leaderboard.service';
 
+@ApiTags('Leaderboard')
+@ApiBearerAuth()
 @Controller('leaderboard')
 @UseGuards(JwtAuthGuard) // Tüm endpoint'ler için JWT authentication
 export class LeaderboardController {
   constructor(private readonly leaderboardService: LeaderboardService) {}
 
   @Post('submit')
+  @ApiOperation({
+    summary: 'Skor gönder',
+    description: "Kullanıcının oyun skorunu leaderboard'a gönderir",
+  })
+  @ApiResponse({ status: 201, description: 'Skor başarıyla gönderildi' })
+  @ApiResponse({ status: 400, description: 'Geçersiz veri' })
+  @ApiResponse({ status: 401, description: 'Yetkilendirme hatası' })
+  @ApiResponse({ status: 409, description: 'Duplicate request detected' })
+  @ApiHeader({
+    name: 'idempotency-key',
+    description: 'İsteğin benzersiz kimliği (idempotency için)',
+    example: 'req_123456789',
+    required: true,
+  })
+  @ApiHeader({
+    name: 'x-timestamp',
+    description: "İsteğin timestamp'i (Unix timestamp - saniye)",
+    example: '1703123456',
+    required: true,
+  })
   @UsePipes(new ValidationPipe())
   @UseGuards(IdempotencyGuard)
   async submitScore(
@@ -33,6 +64,23 @@ export class LeaderboardController {
   }
 
   @Get('top/:gameMode')
+  @ApiOperation({
+    summary: 'En iyi oyuncuları getir',
+    description: 'Belirtilen oyun modunda en yüksek skorlu oyuncuları listeler',
+  })
+  @ApiParam({
+    name: 'gameMode',
+    description: 'Oyun modu (CLASSIC, TIMED, SURVIVAL)',
+    enum: GameMode,
+  })
+  @ApiQuery({
+    name: 'n',
+    description: 'Kaç oyuncu getirileceği',
+    required: false,
+    type: Number,
+  })
+  @ApiResponse({ status: 200, description: 'En iyi oyuncular listesi' })
+  @ApiResponse({ status: 400, description: 'Geçersiz oyun modu' })
   async getTopPlayers(
     @Param('gameMode') gameMode: string,
     @Query('n') count: number = 100,
@@ -42,6 +90,17 @@ export class LeaderboardController {
   }
 
   @Get('me/:gameMode')
+  @ApiOperation({
+    summary: 'Benim sıralamamı getir',
+    description: 'Kullanıcının belirtilen oyun modundaki sıralamasını getirir',
+  })
+  @ApiParam({
+    name: 'gameMode',
+    description: 'Oyun modu (CLASSIC, TIMED, SURVIVAL)',
+    enum: GameMode,
+  })
+  @ApiResponse({ status: 200, description: 'Kullanıcının sıralaması' })
+  @ApiResponse({ status: 401, description: 'Yetkilendirme hatası' })
   async getMyRanking(
     @Param('gameMode') gameMode: string,
     @CurrentUser() user: JwtPayload,
@@ -53,6 +112,23 @@ export class LeaderboardController {
   }
 
   @Get('around-me/:gameMode')
+  @ApiOperation({
+    summary: 'Etrafımdaki oyuncuları getir',
+    description: 'Kullanıcının etrafındaki oyuncuları getirir',
+  })
+  @ApiParam({
+    name: 'gameMode',
+    description: 'Oyun modu (CLASSIC, TIMED, SURVIVAL)',
+    enum: GameMode,
+  })
+  @ApiQuery({
+    name: 'k',
+    description: 'Kaç oyuncu getirileceği',
+    required: false,
+    type: Number,
+  })
+  @ApiResponse({ status: 200, description: 'Etrafımdaki oyuncular listesi' })
+  @ApiResponse({ status: 401, description: 'Yetkilendirme hatası' })
   async getPlayersAroundMe(
     @Param('gameMode') gameMode: string,
     @Query('k') count: number = 5,

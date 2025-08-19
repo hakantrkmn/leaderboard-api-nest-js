@@ -8,6 +8,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AppLogger } from '../logger/logger.service';
 import { AuthService } from './auth.service';
@@ -15,6 +16,7 @@ import { AuthResponseDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -23,6 +25,17 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @ApiOperation({
+    summary: 'Kullanıcı kaydı',
+    description: 'Yeni kullanıcı hesabı oluşturur',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Kullanıcı başarıyla kaydedildi',
+    type: AuthResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Geçersiz veri' })
+  @ApiResponse({ status: 409, description: 'Kullanıcı adı zaten mevcut' })
   @UsePipes(new ValidationPipe())
   async register(
     @Body() registerDto: RegisterDto,
@@ -38,6 +51,17 @@ export class AuthController {
   }
 
   @Post('login')
+  @ApiOperation({
+    summary: 'Kullanıcı girişi',
+    description: 'Kullanıcı girişi yapar ve JWT token döner',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Giriş başarılı',
+    type: AuthResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Geçersiz veri' })
+  @ApiResponse({ status: 401, description: 'Geçersiz kimlik bilgileri' })
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
   async login(
