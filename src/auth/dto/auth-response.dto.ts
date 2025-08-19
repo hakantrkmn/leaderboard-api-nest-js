@@ -1,4 +1,5 @@
 export class AuthResponseDto {
+  success: boolean;
   token: string;
   expiresAt: Date;
   user: {

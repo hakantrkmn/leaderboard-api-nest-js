@@ -70,6 +70,7 @@ export class AuthService {
 
       return {
         token,
+        success: true,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 saat
         user: {
           id: savedUser.Id,
@@ -139,6 +140,7 @@ export class AuthService {
 
       return {
         token,
+        success: true,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 saat
         user: {
           id: user.Id,

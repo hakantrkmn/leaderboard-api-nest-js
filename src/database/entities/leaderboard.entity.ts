@@ -28,7 +28,7 @@ export class Leaderboard {
   @PrimaryColumn({ type: 'uuid' })
   UserId: string;
 
-  @Column({ type: 'integer' })
+  @PrimaryColumn({ type: 'integer' })
   GameMode: GameMode;
 
   @Column({ type: 'bigint' })
@@ -40,10 +40,10 @@ export class Leaderboard {
   })
   RegistrationDateUtc: Date;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', nullable: true }) // nullable: true ekle
   PlayerLevel: number;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', nullable: true })
   TrophyCount: number;
 
   @UpdateDateColumn({

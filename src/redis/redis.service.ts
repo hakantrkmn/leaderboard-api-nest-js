@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Inject, Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
 
@@ -39,8 +37,6 @@ export class RedisService {
   ): Promise<void> {
     try {
       const key = `lb:top:${gameMode}:${count}`;
-      console.log('�� Redis: Setting key:', key);
-      console.log('🔄 Redis: Data:', data);
 
       await this.set(key, data, 300); // 5 dakika TTL
 
